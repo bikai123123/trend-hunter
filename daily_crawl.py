@@ -5,29 +5,30 @@ import time
 import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
-# --- 📡 情报源配置 (RSS) ---
+# --- 📡 v2.0 情报源配置 (修正版) ---
 SOURCES = [
     {
         "category": "科技",
         "name": "IT之家",
         "url": "https://www.ithome.com/rss/",
         "emoji": "⚡",
-        "max_items": 4  # 每次抓4条
+        "max_items": 5
     },
     {
         "category": "财经",
-        "name": "36氪",
-        "url": "https://feed.36kr.com/feed",
-        "emoji": "💰",
-        "max_items": 4
+        "name": "新浪财经", # 替换了不稳定的 36氪
+        "url": "http://rss.sina.com.cn/roll/finance/hot_roll.xml", # 老牌稳定源
+        "emoji": "📈",
+        "max_items": 5
     },
     {
         "category": "时事",
         "name": "中新网",
-        "url": "http://www.chinanews.com.cn/rss/importnews.xml", # 要闻
+        "url": "http://www.chinanews.com.cn/rss/importnews.xml",
         "emoji": "🏛️",
-        "max_items": 4
+        "max_items": 5
     }
+]
 ]
 
 # --- 🧠 AI 配置 ---
@@ -158,3 +159,4 @@ def update_html(news_list):
 
 if __name__ == "__main__":
     main()
+
