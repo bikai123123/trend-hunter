@@ -16,7 +16,7 @@ api_key = os.environ.get("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
     # 使用免费且快速的 Flash 模型
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
 else:
     print("⚠️ 警告: 未找到 GEMINI_API_KEY，将使用默认文案。")
     model = None
@@ -130,3 +130,4 @@ def update_html(new_data):
 if __name__ == "__main__":
     data = fetch_hn_data()
     update_html(data)
+
