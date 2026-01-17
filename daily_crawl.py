@@ -2,58 +2,46 @@ import json
 import requests
 import re
 import time
-import os
+from urllib.parse import quote
 
 # --- 配置区 ---
 HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
 HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
-BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-def get_available_model(api_key):
-    """动态获取可用模型"""
-    url = f"{BASE_URL}/models?key={api_key}"
-    try:
-        print("🔍 正在适配 Google AI 模型...")
-        resp = requests.get(url, timeout=10)
-        if resp.status_code != 200: return None
-        data = resp.json()
-        for model in data.get('models', []):
-            if 'generateContent' in model.get('supportedGenerationMethods', []):
-                if 'flash' in model.get('name') or 'pro' in model.get('name'):
-                    print(f"✅ 锁定模型: {model.get('name')}")
-                    return model.get('name')
-        return None
-    except: return None
+# Pollinations AI (免 Key，免费，无限制接口)
+# 原理：直接通过 URL 传参获取 AI 响应
+POLLINATIONS_URL = "https://text.pollinations.ai/{}"
 
-def get_ai_insight(title, model_name, api_key):
-    """调用 AI"""
-    if not model_name or not api_key: return f"HN 热榜: {title}"
+def get_ai_insight(title):
+    """调用 Pollinations AI 生成中文短评"""
     try:
-        target_url = f"{BASE_URL}/{model_name}:generateContent?key={api_key}"
-        prompt = f"Translate to Chinese and summarize in 1 sentence (max 20 words). Title: '{title}'"
-        payload = { "contents": [{ "parts": [{"text": prompt}] }] }
-        headers = {'Content-Type': 'application/json'}
+        # 1. 构造 Prompt
+        # 要求：翻译成中文，并用一句话（30字内）犀利点评
+        prompt = f"Translate the following Hacker News title to Chinese and explain why it is interesting in 1 sentence (max 30 words, professional tone): '{title}'"
         
-        # 发送请求
-        response = requests.post(target_url, headers=headers, data=json.dumps(payload), timeout=10)
+        # 2. URL 编码 (处理空格和特殊字符)
+        safe_prompt = quote(prompt)
+        target_url = POLLINATIONS_URL.format(safe_prompt)
+        
+        # 3. 发送 GET 请求 (Pollinations 极其简单，直接 GET 即可)
+        # 增加 model=openai 参数试图获取更高质量回答，也可以不加
+        response = requests.get(target_url + "?model=openai", timeout=15)
         
         if response.status_code == 200:
-            return response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
-        elif response.status_code == 429:
-            print("⏳ 触发限流，AI 休息中...")
-            return "🔥 极高热度话题 (AI 繁忙)"
+            return response.text.strip()
         else:
-            return "AI 暂时无法解析"
-    except: return "AI 分析不可用"
+            return f"热度: High (AI 接口 {response.status_code})"
+            
+    except Exception as e:
+        print(f"⚠️ AI 请求失败: {e}")
+        return "AI 连接超时"
 
 def fetch_hn_data():
-    print("🚀 启动...")
-    api_key = os.environ.get("GEMINI_API_KEY")
-    current_model = get_available_model(api_key) if api_key else None
-
+    print("🚀 启动 (Pollinations 无限制版)...")
+    
     try:
-        # 获取前 5 个 (减少数量，保证成功率)
-        top_ids = requests.get(HN_TOP_URL, timeout=10).json()[:5]
+        # 恢复到抓取 8 条！因为没有配额限制了！
+        top_ids = requests.get(HN_TOP_URL, timeout=10).json()[:8]
         
         products = []
         for i, item_id in enumerate(top_ids):
@@ -61,19 +49,21 @@ def fetch_hn_data():
             title = item.get('title', 'No Title').replace("'", "\\'")
             score = item.get('score', 0)
             
-            print(f"[{i+1}/5] 分析: {title[:20]}...")
+            print(f"[{i+1}/8] 分析: {title[:20]}...")
             
-            if current_model:
-                ai_reason = get_ai_insight(title, current_model, api_key)
-                # 清洗换行符和引号
-                ai_reason = ai_reason.replace("'", "").replace("\n", "").replace('"', '')
-            else:
-                ai_reason = f"热度: {score}"
+            # 调用 AI
+            ai_reason = get_ai_insight(title)
+            
+            # 清洗数据 (防止 AI 返回 Markdown 格式或引号破坏 JS)
+            ai_reason = ai_reason.replace("'", "").replace('"', '').replace("\n", "")
+            # 如果 AI 返回太长，强制截断
+            if len(ai_reason) > 50: ai_reason = ai_reason[:49] + "..."
 
-            # Emoji
+            # Emoji 逻辑
             emoji = "📰"
             if "show hn" in title.lower(): emoji = "🚀"
             elif "ai" in title.lower(): emoji = "🤖"
+            elif "google" in title.lower(): emoji = "🔍"
 
             products.append({
                 "id": item_id, "platform": "HackerNews", "title": title,
@@ -81,12 +71,12 @@ def fetch_hn_data():
                 "emoji": emoji, "aiReason": ai_reason
             })
             
-            # 【关键修改】休息 5 秒！防止 429 错误
-            time.sleep(5)
+            # 虽然无限制，但还是礼貌性停顿 1 秒，防止网络堵塞
+            time.sleep(1)
             
         return products
     except Exception as e:
-        print(f"❌ 失败: {e}")
+        print(f"❌ 错误: {e}")
         return []
 
 def update_html(new_data):
