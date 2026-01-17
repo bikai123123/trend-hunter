@@ -2,63 +2,103 @@ import json
 import requests
 import re
 import time
+import os
+import google.generativeai as genai
 
-# --- 目标：Hacker News (硅谷最火的科技热榜) ---
-# 这是一个官方公开 API，极其稳定，绝不会被封
+# --- 配置区 ---
+# Hacker News API
 TOP_STORIES_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
 ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
 
-def fetch_hn_data():
-    print("🚀 正在连接 Hacker News 接口...")
+# 初始化 Gemini
+# 从环境变量获取 Key (由 GitHub Actions 注入)
+api_key = os.environ.get("GEMINI_API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
+    # 使用免费且快速的 Flash 模型
+    model = genai.GenerativeModel('gemini-1.5-flash')
+else:
+    print("⚠️ 警告: 未找到 GEMINI_API_KEY，将使用默认文案。")
+    model = None
+
+def get_ai_insight(title):
+    """调用 Gemini 生成中文短评"""
+    if not model:
+        return f"Hacker News 热榜话题：{title}"
+    
     try:
-        # 1. 获取前 10 个热帖 ID
+        # Prompt 设计：要求简短、犀利、中文
+        prompt = f"""
+        你是一个科技趋势分析师。
+        请将这个 Hacker News 的标题翻译成中文，并用一句话解释它为什么值得关注（或者它解决了什么痛点）。
+        标题: "{title}"
+        要求: 
+        1. 中文回答。
+        2. 语气专业且略带极客感。
+        3. 不要超过 30 个字。
+        4. 不要包含“这个标题”、“这篇文章”等废话，直接说重点。
+        """
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print(f"⚠️ AI 分析失败: {e}")
+        return "AI 暂时掉线，建议直接阅读原文。"
+
+def fetch_hn_data():
+    print("🚀 正在连接 Hacker News 并召唤 Gemini...")
+    try:
+        # 1. 获取前 8 个热帖 (AI 需要时间，先跑 8 个试试)
         resp = requests.get(TOP_STORIES_URL, timeout=10)
-        top_ids = resp.json()[:10]
+        top_ids = resp.json()[:8]
         
         products = []
-        # 2. 遍历 ID 获取详细信息
         for i, item_id in enumerate(top_ids):
             item_resp = requests.get(ITEM_URL.format(item_id), timeout=5)
             item = item_resp.json()
             
-            # 清洗数据
-            title = item.get('title', 'No Title').replace("'", "\\'") # 转义单引号
+            # 基础数据清洗
+            raw_title = item.get('title', 'No Title')
+            clean_title = raw_title.replace("'", "\\'") 
             score = item.get('score', 0)
-            url = item.get('url', '#')
             
-            # 简单的 Emoji 映射
+            print(f"[{i+1}/8] 正在分析: {raw_title[:30]}...")
+            
+            # --- 核心：调用 AI 生成洞察 ---
+            ai_reason = get_ai_insight(raw_title)
+            # 处理一下 AI 返回内容里可能的单引号，防止 JS 报错
+            ai_reason = ai_reason.replace("'", "").replace("\n", "")
+
+            # 根据标题关键词选 Emoji
             emoji = "📰"
-            if "Show HN" in title: emoji = "🚀" # 产品发布
-            elif "Ask HN" in title: emoji = "💬"
-            elif "AI" in title or "GPT" in title: emoji = "🤖"
-            elif "Launch" in title: emoji = "🔥"
-            
-            # 模拟 AI 点评
-            ai_reason = f"Hacker News 热榜第 {i+1} 名！当前热度 {score} points。全球极客正在讨论此话题。"
+            lower_title = raw_title.lower()
+            if "show hn" in lower_title: emoji = "🚀"
+            elif "ai" in lower_title or "gpt" in lower_title or "llm" in lower_title: emoji = "🤖"
+            elif "google" in lower_title or "apple" in lower_title: emoji = "🍎"
+            elif "linux" in lower_title or "code" in lower_title: emoji = "🐧"
 
             products.append({
                 "id": item_id,
                 "platform": "HackerNews",
-                "title": title,
-                "price": "Free", # HN 主要是资讯/开源项目
+                "title": clean_title, # 保留英文原标题
+                "price": "Free",
                 "sales": f"{score} 🔥",
                 "score": score, 
                 "emoji": emoji,
-                "aiReason": ai_reason
+                "aiReason": ai_reason # 这里是 AI 生成的中文！
             })
-            print(f"   - 获取成功: {title[:20]}...")
-            time.sleep(0.1) # 礼貌请求，避免并发过快
             
-        print(f"✅ 成功获取 {len(products)} 条真实科技情报")
+            # 礼貌等待，防止触发 API 速率限制
+            time.sleep(1)
+            
+        print(f"✅ 成功生成 {len(products)} 条 AI 智能简报")
         return products
         
     except Exception as e:
-        print(f"❌ 接口请求失败: {e}")
-        return [] # 这里如果失败，就让它空着，不写入模拟数据了，方便排查
+        print(f"❌ 流程失败: {e}")
+        return []
 
 def update_html(new_data):
     if not new_data:
-        print("⚠️ 没有新数据，跳过更新")
         return
 
     print("📝 正在注入 HTML ...")
@@ -73,20 +113,19 @@ def update_html(new_data):
             js_data_str += f"                    aiReason: '{p['aiReason']}'\n"
             js_data_str += "                },\n"
 
-        # 核心替换逻辑
         pattern = r"(// DATA_START\n)(.*?)(// DATA_END)"
         if not re.search(pattern, content, re.DOTALL):
-            print("❌ 致命错误：在 index.html 里找不到 // DATA_START 标记！请检查文件。")
+            print("❌ 找不到锚点，请检查 index.html")
             return
 
         new_content = re.sub(pattern, f"\\1{js_data_str}                \\3", content, flags=re.DOTALL)
         
         with open("index.html", "w", encoding="utf-8") as f:
             f.write(new_content)
-        print("🎉 index.html 修改完成！准备提交...")
+        print("🎉 index.html 更新完成！")
         
     except Exception as e:
-        print(f"❌ 文件操作失败: {e}")
+        print(f"❌ 文件写入错误: {e}")
 
 if __name__ == "__main__":
     data = fetch_hn_data()
