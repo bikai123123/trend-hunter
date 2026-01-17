@@ -1,9 +1,10 @@
-name: Daily Trend Update
+name: Global Intelligence Update
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天 UTC 00:00 (北京时间 08:00)
-  workflow_dispatch:    # 允许手动触发
+    # 对应北京/新加坡时间: 07:00, 11:00, 15:00, 19:00, 23:00
+    - cron: '0 23,3,7,11,15 * * *'
+  workflow_dispatch: # 允许手动立刻刷新
 
 jobs:
   build:
@@ -23,19 +24,15 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # 【关键变动】安装 Google AI 库
-        pip install requests google-generativeai
+        pip install requests
 
-    - name: Run crawler script
-      # 【关键变动】将 GitHub Secret 注入到 Python 环境变量中
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    - name: Run intelligence crawler
       run: python daily_crawl.py
 
     - name: Commit and push changes
       run: |
-        git config --global user.name 'Trend Bot'
+        git config --global user.name 'Intelligence Bot'
         git config --global user.email 'bot@noreply.github.com'
         git add index.html
-        # 防止空提交报错，且每次自动拉取最新代码避免冲突
-        git diff --quiet && git diff --staged --quiet || (git commit -m "🔥 AI Auto-update: Daily trends refreshed" && git pull --rebase && git push)
+        # 只有当有新数据写入时才提交
+        git diff --quiet && git diff --staged --quiet || (git commit -m "🚀 Auto-update: 5x Daily News Refreshed" && git pull --rebase && git push)
