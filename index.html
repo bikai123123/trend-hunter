@@ -3,99 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trend Hunter | 每日趋势雷达</title>
+    <title>Intelligence Dashboard | 每日情报中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        /* 磨砂玻璃基底 */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
+        /* 滚动条隐藏但可滚动 */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#0f1115] text-gray-200 min-h-screen p-4 sm:p-8">
 
-    <div id="app" class="max-w-2xl mx-auto px-4 py-8 sm:px-6">
+    <div id="app" class="max-w-[1600px] mx-auto">
         
-        <header class="mb-10 flex justify-between items-end">
+        <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-gray-800 pb-6">
             <div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-white mb-1">
-                    Trend<span class="text-indigo-500">Hunter</span>
+                <h1 class="text-4xl font-extrabold tracking-tighter text-white mb-2">
+                    INTEL<span class="text-indigo-500">.DASHBOARD</span>
                 </h1>
-                <p class="text-sm text-gray-500">Global Insights via AI Agent</p>
+                <p class="text-sm text-gray-500 font-mono uppercase tracking-widest">
+                    System Status: <span class="text-green-500">ONLINE</span> // 5x Daily Sync
+                </p>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </span>
-                <span class="text-xs text-gray-400 font-mono">LIVE</span>
+            <div class="mt-4 sm:mt-0 text-right">
+                <div class="text-xs text-gray-600 font-mono mb-1">DATA SOURCE AGGREGATION</div>
+                <div class="flex space-x-3">
+                    <span class="flex items-center text-xs px-2 py-1 rounded bg-blue-900/30 text-blue-400 border border-blue-900/50">ITHome</span>
+                    <span class="flex items-center text-xs px-2 py-1 rounded bg-emerald-900/30 text-emerald-400 border border-emerald-900/50">36Kr</span>
+                    <span class="flex items-center text-xs px-2 py-1 rounded bg-rose-900/30 text-rose-400 border border-rose-900/50">ChinaNews</span>
+                </div>
             </div>
         </header>
 
-        <div class="space-y-5">
-            <div v-for="item in products" :key="item.id" class="glass-card rounded-2xl p-5 hover:bg-slate-800 transition duration-300 ease-in-out group">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <section class="flex flex-col h-full">
+                <div class="flex items-center mb-4 space-x-2">
+                    <div class="w-1 h-6 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                    <h2 class="text-xl font-bold text-blue-100">TECHNOLOGY</h2>
+                    <span class="text-xs font-mono text-blue-500/80 px-2 py-0.5 border border-blue-500/30 rounded">科技前沿</span>
+                </div>
                 
-                <div class="flex justify-between items-center mb-3">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-700 text-gray-300">
-                        {{ item.platform }}
-                    </span>
-                    <span class="text-xs font-mono text-indigo-400">
-                        {{ item.sales }}
-                    </span>
-                </div>
-
-                <div class="flex items-start space-x-4 mb-4">
-                    <div class="text-4xl filter grayscale group-hover:grayscale-0 transition duration-500">
-                        {{ item.emoji }}
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold leading-snug text-gray-100 group-hover:text-indigo-300 transition-colors">
-                            {{ item.title }}
-                        </h2>
-                        <p v-if="item.price !== 'Free' && item.price !== '好价'" class="text-sm text-gray-500 mt-1 font-mono">
-                            {{ item.price }}
-                        </p>
+                <div class="glass-panel rounded-xl p-1 flex-1 min-h-[400px]">
+                    <div v-if="techList.length === 0" class="p-8 text-center text-gray-600 text-sm">Waiting for data...</div>
+                    <div class="space-y-1">
+                        <div v-for="item in techList" :key="item.id" class="p-4 hover:bg-white/5 rounded-lg transition-all duration-300 group">
+                            <h3 class="font-bold text-gray-100 leading-snug mb-2 group-hover:text-blue-300 transition-colors">
+                                {{ item.title }}
+                            </h3>
+                            <div class="relative pl-3 border-l-2 border-blue-500/30">
+                                <p class="text-xs text-gray-400 leading-relaxed font-mono">
+                                    <span class="text-blue-500">AI:</span> {{ item.aiReason }}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="relative mt-2">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500 rounded-full opacity-50"></div>
-                    <p class="pl-3 text-sm text-gray-400 leading-relaxed italic">
-                        <span class="not-italic mr-1">✨</span>
-                        {{ item.aiReason }}
-                    </p>
+            <section class="flex flex-col h-full">
+                <div class="flex items-center mb-4 space-x-2">
+                    <div class="w-1 h-6 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                    <h2 class="text-xl font-bold text-emerald-100">FINANCE</h2>
+                    <span class="text-xs font-mono text-emerald-500/80 px-2 py-0.5 border border-emerald-500/30 rounded">市场宏观</span>
                 </div>
+                
+                <div class="glass-panel rounded-xl p-1 flex-1 min-h-[400px]">
+                    <div v-if="financeList.length === 0" class="p-8 text-center text-gray-600 text-sm">Waiting for data...</div>
+                    <div class="space-y-1">
+                        <div v-for="item in financeList" :key="item.id" class="p-4 hover:bg-white/5 rounded-lg transition-all duration-300 group">
+                            <h3 class="font-bold text-gray-100 leading-snug mb-2 group-hover:text-emerald-300 transition-colors">
+                                {{ item.title }}
+                            </h3>
+                            <div class="relative pl-3 border-l-2 border-emerald-500/30">
+                                <p class="text-xs text-gray-400 leading-relaxed font-mono">
+                                    <span class="text-emerald-500">AI:</span> {{ item.aiReason }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-            </div>
+            <section class="flex flex-col h-full">
+                <div class="flex items-center mb-4 space-x-2">
+                    <div class="w-1 h-6 bg-rose-500 rounded-full shadow-[0_0_10px_rgba(244,63,94,0.5)]"></div>
+                    <h2 class="text-xl font-bold text-rose-100">POLITICS</h2>
+                    <span class="text-xs font-mono text-rose-500/80 px-2 py-0.5 border border-rose-500/30 rounded">全球要闻</span>
+                </div>
+                
+                <div class="glass-panel rounded-xl p-1 flex-1 min-h-[400px]">
+                    <div v-if="politicsList.length === 0" class="p-8 text-center text-gray-600 text-sm">Waiting for data...</div>
+                    <div class="space-y-1">
+                        <div v-for="item in politicsList" :key="item.id" class="p-4 hover:bg-white/5 rounded-lg transition-all duration-300 group">
+                            <h3 class="font-bold text-gray-100 leading-snug mb-2 group-hover:text-rose-300 transition-colors">
+                                {{ item.title }}
+                            </h3>
+                            <div class="relative pl-3 border-l-2 border-rose-500/30">
+                                <p class="text-xs text-gray-400 leading-relaxed font-mono">
+                                    <span class="text-rose-500">AI:</span> {{ item.aiReason }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
 
-        <footer class="mt-12 text-center text-xs text-gray-600 font-mono">
-            <p>POWERED BY GITHUB ACTIONS & GEMINI</p>
+        <footer class="mt-12 border-t border-gray-800 pt-6 text-center text-[10px] text-gray-600 font-mono uppercase">
+            <p>Generated by GitHub Actions & Pollinations AI • Updated every 4 hours</p>
         </footer>
 
     </div>
 
     <script>
-        const { createApp, ref } = Vue;
+        const { createApp, ref, computed } = Vue;
 
         createApp({
             setup() {
-                // --- 核心数据锚点 (Python 脚本会自动替换这里的内容) ---
-                const products = ref([
+                // --- 数据源 (Python 脚本会自动替换 DATA_START 和 DATA_END 之间的内容) ---
+                const rawData = ref([
                     // DATA_START
                     {
-                        id: 0, platform: 'System', title: 'Data Pipeline Initialized...', price: '-', sales: '100%', score: 100, emoji: '📡',
-                        aiReason: '等待首次数据注入，请在 GitHub Actions 运行脚本。'
+                        id: 999, platform: 'System', title: 'Dashboard Initializing...', price: '-', sales: '-', score: 0, emoji: '⚡',
+                        aiReason: '数据等待注入中...'
                     },
                     // DATA_END
                 ]);
 
+                // --- 自动分类逻辑 ---
+                // 根据 platform 字段自动分发到不同板块
+                const techList = computed(() => rawData.value.filter(item => item.platform === '科技' || item.platform === 'IT之家'));
+                const financeList = computed(() => rawData.value.filter(item => item.platform === '财经' || item.platform === '36氪'));
+                const politicsList = computed(() => rawData.value.filter(item => item.platform === '时事' || item.platform === '中新网'));
+
                 return {
-                    products
+                    techList,
+                    financeList,
+                    politicsList
                 }
             }
         }).mount('#app');
