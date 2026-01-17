@@ -29,7 +29,7 @@ SOURCES = [
         "max_items": 5
     }
 ]
-]
+
 
 # --- 🧠 AI 配置 ---
 POLLINATIONS_URL = "https://text.pollinations.ai/{}"
@@ -159,4 +159,5 @@ def update_html(news_list):
 
 if __name__ == "__main__":
     main()
+
 
