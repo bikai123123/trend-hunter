@@ -134,11 +134,39 @@
                 // --- 数据源 (Python 脚本会自动替换 DATA_START 和 DATA_END 之间的内容) ---
                 const rawData = ref([
                     // DATA_START
-                    {
-                        id: 999, platform: 'System', title: 'Dashboard Initializing...', price: '-', sales: '-', score: 0, emoji: '⚡',
-                        aiReason: '数据等待注入中...'
-                    },
-                    // DATA_END
+                {
+                    id: 0, platform: '科技', title: '奇瑞汽车宣布三大升级计划，2026 年超 35 款车型将搭载猎鹰智驾', price: 'News', sales: '刚刚', score: 100, emoji: '⚡',
+                    aiReason: '**Title (already in Chinese):**  奇瑞汽车宣布三大升级计划，202...'
+                },
+                {
+                    id: 1, platform: '科技', title: '育碧称《刺客信条：影》《幻景》都是“4A 游戏”', price: 'News', sales: '刚刚', score: 99, emoji: '⚡',
+                    aiReason: '暂无 AI 点评'
+                },
+                {
+                    id: 2, platform: '科技', title: '马斯克：用于 Grok 的“Colossus 2”超级计算机已投入运行，全球首个吉瓦级训练集群', price: 'News', sales: '刚刚', score: 98, emoji: '⚡',
+                    aiReason: 'AI 正在分析中...'
+                },
+                {
+                    id: 3, platform: '科技', title: '廉价版锁区机型推出后，索尼 PS5 游戏机在日销量持续回升', price: 'News', sales: '刚刚', score: 97, emoji: '⚡',
+                    aiReason: 'AI 正在分析中...'
+                },
+                {
+                    id: 4, platform: '时事', title: '东西问丨墨西哥作家大Z：网络文学天然具跨国界能力', price: 'News', sales: '刚刚', score: 96, emoji: '🏛️',
+                    aiReason: '暂无 AI 点评'
+                },
+                {
+                    id: 5, platform: '时事', title: '2月1日起铁路部门拓展“静音车厢”服务范围', price: 'News', sales: '刚刚', score: 95, emoji: '🏛️',
+                    aiReason: 'AI 正在分析中...'
+                },
+                {
+                    id: 6, platform: '时事', title: '“中国天眼”要升级了！为什么要升级？怎么升级？', price: 'News', sales: '刚刚', score: 94, emoji: '🏛️',
+                    aiReason: 'AI 正在分析中...'
+                },
+                {
+                    id: 7, platform: '时事', title: '中国花卉自主育种加速 “中国风”月季获市场青睐', price: 'News', sales: '刚刚', score: 93, emoji: '🏛️',
+                    aiReason: 'AI 正在分析中...'
+                },
+                // DATA_END
                 ]);
 
                 // --- 自动分类逻辑 ---
