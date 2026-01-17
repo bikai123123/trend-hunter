@@ -5,85 +5,124 @@ import time
 import os
 
 # --- 配置区 ---
-# Hacker News API
-TOP_STORIES_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
-ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
+HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
+HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
 
-# Gemini API (直接使用 HTTP 接口，绕过 SDK 版本问题)
-# 使用 gemini-1.5-flash，这是目前免费版最标准的模型
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={}"
+# Google AI Studio 基础 URL
+BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
-def get_ai_insight(title):
-    """直接发送 HTTP 请求调用 Gemini"""
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
+def get_available_model(api_key):
+    """
+    动态获取当前 API Key 可用的模型列表，不再瞎猜名字
+    """
+    url = f"{BASE_URL}/models?key={api_key}"
+    try:
+        print("🔍 正在查询可用模型列表...")
+        resp = requests.get(url, timeout=10)
+        if resp.status_code != 200:
+            print(f"⚠️ 无法获取模型列表: {resp.text}")
+            return None
+            
+        data = resp.json()
+        # 遍历所有模型，寻找支持 generateContent 的模型
+        for model in data.get('models', []):
+            methods = model.get('supportedGenerationMethods', [])
+            name = model.get('name') # 例如 models/gemini-1.5-flash
+            
+            # 优先找 flash 或 pro，且必须支持生成内容
+            if 'generateContent' in methods:
+                if 'flash' in name or 'pro' in name:
+                    print(f"✅ 锁定模型: {name}")
+                    return name
+        
+        # 如果没找到理想的，就随便返回第一个支持生成的
+        for model in data.get('models', []):
+            if 'generateContent' in model.get('supportedGenerationMethods', []):
+                print(f"⚠️ 降级使用模型: {model.get('name')}")
+                return model.get('name')
+                
+        return None
+    except Exception as e:
+        print(f"❌ 模型发现失败: {e}")
+        return None
+
+def get_ai_insight(title, model_name, api_key):
+    """发送 HTTP 请求调用 Gemini"""
+    if not model_name or not api_key:
         return f"Hacker News 热榜话题：{title}"
     
     try:
-        # 1. 构造请求 URL
-        target_url = GEMINI_URL.format(api_key)
+        # 构造动态 URL
+        target_url = f"{BASE_URL}/{model_name}:generateContent?key={api_key}"
         
-        # 2. 构造 Prompt
         prompt_text = f"""
-        请将这个 Hacker News 科技新闻标题翻译成中文，并用一句话（30字以内）解释它的核心看点或痛点。
-        标题: "{title}"
+        Translate this Hacker News title to Chinese and explain the key point in 1 sentence (max 30 words).
+        Title: "{title}"
         """
         
-        # 3. 构造 Payload (数据包)
-        payload = {
-            "contents": [{
-                "parts": [{"text": prompt_text}]
-            }]
-        }
-        
-        # 4. 发送 POST 请求
+        payload = { "contents": [{ "parts": [{"text": prompt_text}] }] }
         headers = {'Content-Type': 'application/json'}
+        
         response = requests.post(target_url, headers=headers, data=json.dumps(payload), timeout=10)
         
-        # 5. 解析结果
         if response.status_code == 200:
             result = response.json()
-            # 提取文本内容
-            text = result['candidates'][0]['content']['parts'][0]['text']
-            return text.strip()
+            # 兼容不同的返回结构
+            try:
+                text = result['candidates'][0]['content']['parts'][0]['text']
+                return text.strip()
+            except:
+                return "AI 解析结果格式异常"
         else:
-            print(f"⚠️ API 响应错误: {response.status_code} - {response.text}")
-            return "AI 接口响应异常，请直接看原文。"
+            print(f"⚠️ API {response.status_code}: {response.text[:100]}...")
+            return "AI 接口响应异常"
             
     except Exception as e:
-        print(f"⚠️ 网络请求失败: {e}")
-        return "AI 分析暂时不可用。"
+        print(f"⚠️ 请求失败: {e}")
+        return "AI 分析暂时不可用"
 
 def fetch_hn_data():
-    print("🚀 正在连接 Hacker News (HTTP 直连模式)...")
+    print("🚀 启动趋势猎人...")
+    
+    # 1. 准备 API Key 和模型
+    api_key = os.environ.get("GEMINI_API_KEY")
+    current_model = None
+    
+    if api_key:
+        current_model = get_available_model(api_key)
+    else:
+        print("⚠️ 未找到 GEMINI_API_KEY，将跳过 AI 分析")
+
     try:
-        # 获取前 8 个热帖
-        resp = requests.get(TOP_STORIES_URL, timeout=10)
-        top_ids = resp.json()[:8]
+        # 2. 获取 Hacker News 数据
+        print("📡 获取 HN 热榜 ID...")
+        resp = requests.get(HN_TOP_URL, timeout=10)
+        top_ids = resp.json()[:8] # 取前8个
         
         products = []
         for i, item_id in enumerate(top_ids):
-            item_resp = requests.get(ITEM_URL.format(item_id), timeout=5)
+            item_resp = requests.get(HN_ITEM_URL.format(item_id), timeout=5)
             item = item_resp.json()
             
-            # 清洗数据
             raw_title = item.get('title', 'No Title')
             clean_title = raw_title.replace("'", "\\'") 
             score = item.get('score', 0)
             
-            print(f"[{i+1}/8] 分析中: {raw_title[:30]}...")
+            print(f"[{i+1}/8] 处理: {raw_title[:20]}...")
             
-            # --- 调用 AI ---
-            ai_reason = get_ai_insight(raw_title)
-            # 清洗 AI 返回的特殊字符
-            ai_reason = ai_reason.replace("'", "").replace("\n", "").replace('"', '')
+            # --- 调用 AI (如果模型可用) ---
+            if current_model:
+                ai_reason = get_ai_insight(raw_title, current_model, api_key)
+                ai_reason = ai_reason.replace("'", "").replace("\n", "").replace('"', '')
+            else:
+                ai_reason = f"Hacker News 热度: {score}"
 
-            # 简单的 Emoji 映射
+            # Emoji 逻辑
             emoji = "📰"
             lower = raw_title.lower()
             if "show hn" in lower: emoji = "🚀"
             elif "ai" in lower or "llm" in lower: emoji = "🤖"
-            elif "ask hn" in lower: emoji = "💬"
+            elif "release" in lower: emoji = "🔥"
 
             products.append({
                 "id": item_id,
@@ -95,9 +134,9 @@ def fetch_hn_data():
                 "emoji": emoji,
                 "aiReason": ai_reason
             })
-            time.sleep(1) # 稍微慢一点，稳定第一
+            time.sleep(1) 
             
-        print(f"✅ 成功获取 {len(products)} 条数据")
+        print(f"✅ 完成！获取 {len(products)} 条数据")
         return products
         
     except Exception as e:
@@ -106,8 +145,7 @@ def fetch_hn_data():
 
 def update_html(new_data):
     if not new_data: return
-
-    print("📝 正在注入 HTML ...")
+    print("📝 更新 HTML...")
     try:
         with open("index.html", "r", encoding="utf-8") as f:
             content = f.read()
@@ -128,7 +166,7 @@ def update_html(new_data):
         
         with open("index.html", "w", encoding="utf-8") as f:
             f.write(new_content)
-        print("🎉 更新完成！")
+        print("🎉 写入成功！")
         
     except Exception as e:
         print(f"❌ 写入错误: {e}")
