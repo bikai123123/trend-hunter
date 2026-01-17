@@ -159,28 +159,15 @@
             const currentTab = ref('all');
             
             // --- 模拟数据 (这里就是以后你 Python 爬虫填进去的数据) ---
-            const products = ref([
-                {
-                    id: 1, platform: 'TikTok', title: '赛博朋克透明磁吸充', price: '$49.99', sales: '1.2w+', score: 98, emoji: '🔋',
-                    aiReason: '受《边缘行者》影响，透明机甲风在 Gen-Z 群体回潮。适合展示内部构造视频，完播率极高。'
-                },
-                {
-                    id: 2, platform: 'Amazon', title: '挂脖式无叶风扇 Pro', price: '$25.00', sales: '8k+', score: 94, emoji: '🌬️',
-                    aiReason: '北半球夏季热浪预警，Google Trends "Cooling" 搜索量飙升300%。办公/通勤场景刚需。'
-                },
-                {
-                    id: 3, platform: 'Temu', title: '解压捏捏乐 (大号)', price: '$3.99', sales: '5w+', score: 91, emoji: '🥑',
-                    aiReason: '极低客单价+视觉冲击力。ASMR 视频在 Instagram Reels 爆发，适合作为引流款。'
-                },
-                {
-                    id: 4, platform: 'TikTok', title: '日落氛围灯 (升级版)', price: '$15.99', sales: '3k+', score: 88, emoji: '🌅',
-                    aiReason: '家居改造话题 #RoomDecor 持续热门。升级版增加了 App 控制，解决了旧款痛点。'
-                },
-                {
-                    id: 5, platform: 'Amazon', title: '宠物智能饮水机', price: '$35.00', sales: '2k+', score: 85, emoji: '🐱',
-                    aiReason: '“精细化养宠”趋势。针对铲屎官对“水质卫生”的焦虑。痛点明确，复购滤芯利润高。'
-                }
-            ]);
+           const products = ref([
+    // DATA_START
+    {
+        id: 1, platform: 'Demo', title: 'Waiting for update...', price: '$0.00', sales: '0', score: 0, emoji: '⏳',
+        aiReason: '数据等待注入...'
+    },
+    // DATA_END
+]);
+          
 
             const tabs = [
                 { id: 'all', name: '全网热榜', icon: 'fa-solid fa-globe' },
@@ -224,4 +211,5 @@
 </script>
 
 </body>
+
 </html>
