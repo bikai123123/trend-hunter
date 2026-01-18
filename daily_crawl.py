@@ -5,7 +5,7 @@ import time
 import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
-# --- 📡 v3.1 稳定情报源 ---
+# --- 📡 v3.3 双保险稳定源 ---
 SOURCES = [
     {
         "category": "科技",
@@ -16,14 +16,14 @@ SOURCES = [
     },
     {
         "category": "财经",
-        "name": "澎湃财经",  # 【替换】新浪 -> 澎湃 (UTF-8, 更稳定)
-        "url": "https://www.thepaper.cn/rss.jsp?sectionid=25951",
-        "emoji": "📈",
+        "name": "中新财经", # 【替换】改用和时事一样的源，确保能连通
+        "url": "http://www.chinanews.com.cn/rss/finance.xml", 
+        "emoji": "💰",
         "max_items": 20
     },
     {
         "category": "时事",
-        "name": "中新网",
+        "name": "中新要闻",
         "url": "http://www.chinanews.com.cn/rss/importnews.xml",
         "emoji": "🏛️",
         "max_items": 20
@@ -43,19 +43,18 @@ def get_ai_summary(title, category):
         else:
             prompt = f"Explain tech innovation in 1 sentence (Chinese). Title: '{title}'"
         
+        # 增加 model=openai 参数，并对 prompt 进行 URL 编码
         target_url = POLLINATIONS_URL.format(quote(prompt))
-        # 超时设为 10 秒，防止阻塞
-        response = requests.get(target_url + "?model=openai", timeout=10)
+        response = requests.get(target_url + "?model=openai", timeout=8) # 缩短超时，加速
         
         if response.status_code == 200:
             return response.text.strip()
-        else:
-            return "点击查看详情"
+        return "点击查看详情"
     except:
         return "点击阅读原文"
 
 def fetch_rss_data(source_config):
-    """RSS 抓取引擎 (增强版)"""
+    """RSS 抓取引擎 (智能编码版)"""
     category = source_config['category']
     print(f"📡 连接 [{category}] {source_config['name']}...")
     
@@ -66,17 +65,27 @@ def fetch_rss_data(source_config):
     try:
         resp = requests.get(source_config['url'], headers=headers, timeout=15)
         
-        # 【关键修复】不要强制 encoding='utf-8'，
-        # 而是直接把二进制 content 喂给 ET，让它根据 XML 头自动识别编码 (GBK/UTF-8 通吃)
-        
         if resp.status_code != 200:
             print(f"❌ 连接失败: {resp.status_code}")
             return []
 
-        # 使用 resp.content (Bytes) 而不是 resp.text (String)
-        root = ET.fromstring(resp.content)
-        
-        # 澎湃新闻的结构可能略有不同，做通用适配
+        # --- 智能编码处理 ---
+        # 先尝试自动识别，如果失败则回退到 utf-8，最后尝试 gbk
+        content_decoded = ""
+        try:
+            # 优先使用 response 推测的编码，如果为空则默认 utf-8
+            encoding = resp.encoding if resp.encoding else 'utf-8'
+            content_decoded = resp.content.decode(encoding, errors='replace')
+        except:
+            # 备用方案：GBK (常见于老旧中文站)
+            try:
+                content_decoded = resp.content.decode('gbk', errors='replace')
+            except:
+                # 最后的挣扎：忽略错误强制解码
+                content_decoded = resp.content.decode('utf-8', errors='ignore')
+
+        # 解析 XML
+        root = ET.fromstring(content_decoded)
         channel = root.find('channel')
         items = channel.findall('item')[:source_config['max_items']]
 
@@ -85,12 +94,13 @@ def fetch_rss_data(source_config):
             title = item.find('title').text
             link = item.find('link').text
             
-            # 进度打印
-            if i % 5 == 0: print(f"   -> 处理第 {i+1} 条: {title[:10]}...")
+            # 进度条
+            if i % 5 == 0: print(f"   -> {category} ({i+1}/{source_config['max_items']}): {title[:8]}...")
             
             ai_text = get_ai_summary(title, category)
+            # 清洗数据
             ai_text = ai_text.replace("'", "").replace('"', '').replace("\n", "")
-            if len(ai_text) > 50: ai_text = ai_text[:49] + "..."
+            if len(ai_text) > 40: ai_text = ai_text[:39] + "..."
 
             results.append({
                 "title": title,
@@ -100,8 +110,8 @@ def fetch_rss_data(source_config):
                 "aiReason": ai_text
             })
             
-            # 这里的 sleep 稍微调小一点，保证 60 条能跑完
-            time.sleep(0.8)
+            # 稍微快一点，0.5秒间隔
+            time.sleep(0.5)
             
         return results
 
@@ -136,5 +146,5 @@ if __name__ == "__main__":
     for source in SOURCES:
         data = fetch_rss_data(source)
         all_news.extend(data)
-        time.sleep(2)
+        time.sleep(1)
     update_html(all_news)
