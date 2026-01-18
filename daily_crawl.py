@@ -5,19 +5,19 @@ import time
 import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
-# --- 📡 v3.0 高容量情报源 ---
+# --- 📡 v3.1 稳定情报源 ---
 SOURCES = [
     {
         "category": "科技",
         "name": "IT之家",
         "url": "https://www.ithome.com/rss/",
         "emoji": "⚡",
-        "max_items": 20  # 扩容至 20 条
+        "max_items": 20
     },
     {
         "category": "财经",
-        "name": "新浪财经",
-        "url": "http://rss.sina.com.cn/roll/finance/hot_roll.xml",
+        "name": "澎湃财经",  # 【替换】新浪 -> 澎湃 (UTF-8, 更稳定)
+        "url": "https://www.thepaper.cn/rss.jsp?sectionid=25951",
         "emoji": "📈",
         "max_items": 20
     },
@@ -34,7 +34,7 @@ SOURCES = [
 POLLINATIONS_URL = "https://text.pollinations.ai/{}"
 
 def get_ai_summary(title, category):
-    """AI 极速总结模式"""
+    """AI 极速总结"""
     try:
         if category == "财经":
             prompt = f"As a financial analyst, summarize market impact in 1 sentence (Chinese). Title: '{title}'"
@@ -44,7 +44,7 @@ def get_ai_summary(title, category):
             prompt = f"Explain tech innovation in 1 sentence (Chinese). Title: '{title}'"
         
         target_url = POLLINATIONS_URL.format(quote(prompt))
-        # 缩短超时时间，保证大量抓取时的整体速度
+        # 超时设为 10 秒，防止阻塞
         response = requests.get(target_url + "?model=openai", timeout=10)
         
         if response.status_code == 200:
@@ -55,9 +55,9 @@ def get_ai_summary(title, category):
         return "点击阅读原文"
 
 def fetch_rss_data(source_config):
-    """RSS 抓取引擎"""
+    """RSS 抓取引擎 (增强版)"""
     category = source_config['category']
-    print(f"📡 连接 [{category}] {source_config['name']} (目标: 20条)...")
+    print(f"📡 连接 [{category}] {source_config['name']}...")
     
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -65,24 +65,28 @@ def fetch_rss_data(source_config):
     
     try:
         resp = requests.get(source_config['url'], headers=headers, timeout=15)
-        resp.encoding = 'utf-8'
+        
+        # 【关键修复】不要强制 encoding='utf-8'，
+        # 而是直接把二进制 content 喂给 ET，让它根据 XML 头自动识别编码 (GBK/UTF-8 通吃)
         
         if resp.status_code != 200:
             print(f"❌ 连接失败: {resp.status_code}")
             return []
 
-        root = ET.fromstring(resp.text)
+        # 使用 resp.content (Bytes) 而不是 resp.text (String)
+        root = ET.fromstring(resp.content)
+        
+        # 澎湃新闻的结构可能略有不同，做通用适配
         channel = root.find('channel')
         items = channel.findall('item')[:source_config['max_items']]
 
         results = []
         for i, item in enumerate(items):
             title = item.find('title').text
-            # 关键：抓取原文链接
             link = item.find('link').text
             
-            # 进度条打印，避免日志太长
-            if i % 5 == 0: print(f"   -> 正在处理第 {i+1} 条...")
+            # 进度打印
+            if i % 5 == 0: print(f"   -> 处理第 {i+1} 条: {title[:10]}...")
             
             ai_text = get_ai_summary(title, category)
             ai_text = ai_text.replace("'", "").replace('"', '').replace("\n", "")
@@ -90,19 +94,19 @@ def fetch_rss_data(source_config):
 
             results.append({
                 "title": title,
-                "link": link,  # 新增字段
+                "link": link,
                 "category": category,
                 "emoji": source_config['emoji'],
                 "aiReason": ai_text
             })
             
-            # 稍微加快速度：1秒间隔 (60条约耗时1分钟)
-            time.sleep(1)
+            # 这里的 sleep 稍微调小一点，保证 60 条能跑完
+            time.sleep(0.8)
             
         return results
 
     except Exception as e:
-        print(f"❌ 解析错误: {e}")
+        print(f"❌ 解析错误 ({category}): {e}")
         return []
 
 def update_html(news_list):
@@ -114,7 +118,6 @@ def update_html(news_list):
         js_data = ""
         for i, item in enumerate(news_list):
             js_data += "                {\n"
-            # 写入 link 字段
             js_data += f"                    id: {i}, platform: '{item['category']}', title: '{item['title']}', link: '{item['link']}', price: 'News', sales: '刚刚', score: {100-i}, emoji: '{item['emoji']}',\n"
             js_data += f"                    aiReason: '{item['aiReason']}'\n"
             js_data += "                },\n"
@@ -131,6 +134,7 @@ def update_html(news_list):
 if __name__ == "__main__":
     all_news = []
     for source in SOURCES:
-        all_news.extend(fetch_rss_data(source))
+        data = fetch_rss_data(source)
+        all_news.extend(data)
         time.sleep(2)
     update_html(all_news)
