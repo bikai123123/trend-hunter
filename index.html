@@ -140,11 +140,167 @@
             setup() {
                 const rawData = ref([
                     // DATA_START
-                    {
-                        id: 0, platform: 'System', title: 'Connecting to data streams...', link: '#', price: '-', sales: '-', score: 0, emoji: '📡',
-                        aiReason: 'Please wait for synchronization...'
-                    },
-                    // DATA_END
+                {
+                    id: 0, platform: '科技', title: '魂类游戏《匹诺曹的谎言》迎 5 折促销，Steam 国区 149 元', link: 'https://www.ithome.com/0/914/170.htm', price: 'News', sales: '刚刚', score: 100, emoji: '⚡',
+                    aiReason: '点击阅读原文'
+                },
+                {
+                    id: 1, platform: '科技', title: '华为乾崑智驾 ADS 4.1 升级点公布，支持 eAES 防夹心、驾驶员失能靠边停等', link: 'https://www.ithome.com/0/914/169.htm', price: 'News', sales: '刚刚', score: 99, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 2, platform: '科技', title: 'B 社老将离职内幕：为《上古卷轴 6》苦等 11 年，最终无缘首席设计师', link: 'https://www.ithome.com/0/914/168.htm', price: 'News', sales: '刚刚', score: 98, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 3, platform: '科技', title: '小米手表 5 灰度 OS3.0.152.0 版本，带来表端独立微信版本更新等', link: 'https://www.ithome.com/0/914/166.htm', price: 'News', sales: '刚刚', score: 97, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 4, platform: '科技', title: '科技昨夜今晨 0118：2026 央视春晚完成首次彩排；曝苹果计划为 5 款产品升级 OLED 屏幕；罗永浩称个人不会再回应“西贝事件”...', link: 'https://www.ithome.com/0/914/162.htm', price: 'News', sales: '刚刚', score: 96, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 5, platform: '科技', title: '荣耀 Magic8 Pro Air 新机官宣支持 eSIM，搭配实体 SIM 卡可实现四卡双待', link: 'https://www.ithome.com/0/914/160.htm', price: 'News', sales: '刚刚', score: 95, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 6, platform: '科技', title: '软件版本号“6.0.0.130”：华为 MateBook Pro 电脑通过 OpenHarmony 6.0 Release 认证', link: 'https://www.ithome.com/0/914/158.htm', price: 'News', sales: '刚刚', score: 94, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 7, platform: '科技', title: '消息称华为 Mate 80 单品激活 150 万，逆袭成年底国产旗舰第一', link: 'https://www.ithome.com/0/914/157.htm', price: 'News', sales: '刚刚', score: 93, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 8, platform: '科技', title: '微软 Win11 25H2 隐性升级：Wi-Fi 与音频体验依赖新驱动实现改进', link: 'https://www.ithome.com/0/914/156.htm', price: 'News', sales: '刚刚', score: 92, emoji: '⚡',
+                    aiReason: '点击阅读原文'
+                },
+                {
+                    id: 9, platform: '科技', title: '奇瑞汽车宣布三大升级计划，2026 年超 35 款车型将搭载猎鹰智驾', link: 'https://www.ithome.com/0/914/155.htm', price: 'News', sales: '刚刚', score: 91, emoji: '⚡',
+                    aiReason: '点击阅读原文'
+                },
+                {
+                    id: 10, platform: '科技', title: '育碧称《刺客信条：影》《幻景》都是“4A 游戏”', link: 'https://www.ithome.com/0/914/154.htm', price: 'News', sales: '刚刚', score: 90, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 11, platform: '科技', title: '马斯克：用于 Grok 的“Colossus 2”超级计算机已投入运行，全球首个吉瓦级训练集群', link: 'https://www.ithome.com/0/914/153.htm', price: 'News', sales: '刚刚', score: 89, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 12, platform: '科技', title: '廉价版锁区机型推出后，索尼 PS5 游戏机在日销量持续回升', link: 'https://www.ithome.com/0/914/152.htm', price: 'News', sales: '刚刚', score: 88, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 13, platform: '科技', title: '红魔 11 Air 手机搭载旗舰同款系统 REDMAGIC OS 11.0，拥有多种 AI 功能', link: 'https://www.ithome.com/0/914/151.htm', price: 'News', sales: '刚刚', score: 87, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 14, platform: '科技', title: '全球最大打桩船启闭油缸下线，一次性可举起“3500 辆家用轿车”', link: 'https://www.ithome.com/0/914/150.htm', price: 'News', sales: '刚刚', score: 86, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 15, platform: '科技', title: 'QDC 推出 CRAVE 渴望 耳机：搭载 1 动圈 10 动铁 4 静电单元，20999 元起', link: 'https://www.ithome.com/0/914/149.htm', price: 'News', sales: '刚刚', score: 85, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 16, platform: '科技', title: '罗永浩确认被微博禁言 15 天，个人不会再回应“西贝事件”', link: 'https://www.ithome.com/0/914/148.htm', price: 'News', sales: '刚刚', score: 84, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 17, platform: '科技', title: '自带 7 个侧键的人体工学鼠标，SOLAKAKA E9 Pro 现身众筹平台', link: 'https://www.ithome.com/0/914/147.htm', price: 'News', sales: '刚刚', score: 83, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 18, platform: '科技', title: '绿联推出 MagFlow 二合一 Magsafe 充电宝：20000mAh 容量，支持 Qi2 25W 无线、100W 有线快充', link: 'https://www.ithome.com/0/914/146.htm', price: 'News', sales: '刚刚', score: 82, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 19, platform: '科技', title: '奇瑞风云 T9L 大五座 SUV 开启盲订：CLTC 纯电续航 230km，猎鹰 700 智驾', link: 'https://www.ithome.com/0/914/145.htm', price: 'News', sales: '刚刚', score: 81, emoji: '⚡',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 20, platform: '时事', title: '辽宁省人大法制委员会原主任委员周立元接受审查调查', link: 'https://www.chinanews.com.cn/gn/2026/01-18/10553977.shtml', price: 'News', sales: '刚刚', score: 80, emoji: '🏛️',
+                    aiReason: '点击阅读原文'
+                },
+                {
+                    id: 21, platform: '时事', title: '电动车停车乱象如何破局？多地探索治理良方', link: 'https://www.chinanews.com.cn/sh/2026/01-18/10553962.shtml', price: 'News', sales: '刚刚', score: 79, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 22, platform: '时事', title: '中央气象台：寒潮将影响我国大部地区', link: 'https://www.chinanews.com.cn/sh/2026/01-18/10553950.shtml', price: 'News', sales: '刚刚', score: 78, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 23, platform: '时事', title: '起身时突然“眼前发黑”？建议及时排查这5种病', link: 'https://www.chinanews.com.cn/jk/2026/01-18/10553940.shtml', price: 'News', sales: '刚刚', score: 77, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 24, platform: '时事', title: '东西问丨墨西哥作家大Z：网络文学天然具跨国界能力', link: 'https://www.chinanews.com.cn/gn/2026/01-17/10553814.shtml', price: 'News', sales: '刚刚', score: 76, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 25, platform: '时事', title: '2月1日起铁路部门拓展“静音车厢”服务范围', link: 'https://www.chinanews.com.cn/cj/2026/01-17/10553705.shtml', price: 'News', sales: '刚刚', score: 75, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 26, platform: '时事', title: '“中国天眼”要升级了！为什么要升级？怎么升级？', link: 'https://www.chinanews.com.cn/gn/2026/01-17/10553654.shtml', price: 'News', sales: '刚刚', score: 74, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 27, platform: '时事', title: '中国花卉自主育种加速 “中国风”月季获市场青睐', link: 'http://www.chinanews.com.cn/cj/shipin/cns-d/2026/01-17/news1042633.shtml', price: 'News', sales: '刚刚', score: 73, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 28, platform: '时事', title: '从发现险情到“换乘”返回 神二十乘组讲述太空应急处置细节', link: 'http://www.chinanews.com.cn/sh/shipin/cns-d/2026/01-17/news1042634.shtml', price: 'News', sales: '刚刚', score: 72, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 29, platform: '时事', title: '撸串搭绿茶 火锅配酸奶 “垃圾食品”到底有没有解药？', link: 'https://www.chinanews.com.cn/jk/2026/01-17/10553637.shtml', price: 'News', sales: '刚刚', score: 71, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 30, platform: '时事', title: '用二舅“宝华”命名的月季上市时间来啦', link: 'https://www.chinanews.com.cn/cj/2026/01-17/10553635.shtml', price: 'News', sales: '刚刚', score: 70, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 31, platform: '时事', title: '海南推出城市更新行动方案：2027年底取得初步成效', link: 'https://www.chinanews.com.cn/sh/2026/01-17/10553597.shtml', price: 'News', sales: '刚刚', score: 69, emoji: '🏛️',
+                    aiReason: '点击阅读原文'
+                },
+                {
+                    id: 32, platform: '时事', title: '一图读懂 | 关于草莓的真相，你不放心的一次讲清', link: 'https://www.chinanews.com.cn/life/2026/01-17/10553630.shtml', price: 'News', sales: '刚刚', score: 68, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 33, platform: '时事', title: '实践三十二号卫星发射失利', link: 'https://www.chinanews.com.cn/gn/2026/01-17/10553628.shtml', price: 'News', sales: '刚刚', score: 67, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 34, platform: '时事', title: '当心！手机出现这3种情况，可能是骗子在转账', link: 'https://www.chinanews.com.cn/sh/2026/01-17/10553603.shtml', price: 'News', sales: '刚刚', score: 66, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 35, platform: '时事', title: '广东佛山一中学103人感染诺如病毒', link: 'https://www.chinanews.com.cn/sh/2026/01-17/10553589.shtml', price: 'News', sales: '刚刚', score: 65, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 36, platform: '时事', title: '降低物流成本 “国家队”正在为全行业打造“开放生态”', link: 'https://www.chinanews.com.cn/cj/2026/01-17/10553588.shtml', price: 'News', sales: '刚刚', score: 64, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 37, platform: '时事', title: '铁路12306手机客户端务工人员春运预约购票服务上线', link: 'https://www.chinanews.com.cn/cj/2026/01-17/10553579.shtml', price: 'News', sales: '刚刚', score: 63, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 38, platform: '时事', title: '养殖场“装置”竟威胁飞机起降 国家安全机关提示', link: 'https://www.chinanews.com.cn/gn/2026/01-17/10553576.shtml', price: 'News', sales: '刚刚', score: 62, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                {
+                    id: 39, platform: '时事', title: '学生购火车票优惠政策上新 一文了解购票常见问题', link: 'https://www.chinanews.com.cn/sh/2026/01-17/10553569.shtml', price: 'News', sales: '刚刚', score: 61, emoji: '🏛️',
+                    aiReason: '点击查看详情'
+                },
+                // DATA_END
                 ]);
 
                 const techList = computed(() => rawData.value.filter(item => item.platform === '科技'));
